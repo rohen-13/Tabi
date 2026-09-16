@@ -1,0 +1,67 @@
+export type City = "Tokyo" | "Kyoto" | "Osaka";
+export type Interest = "Culture" | "Food" | "Nature" | "City life";
+export type Place = { id: string; city: City; name: string; category: Interest; area: string; hours: number; cost: number; lat: number; lng: number; description: string };
+export const CITIES: City[] = ["Tokyo", "Kyoto", "Osaka"];
+export const INTERESTS: Interest[] = ["Culture", "Food", "Nature", "City life"];
+export const CITY_INFO = {
+ Tokyo: { lat:35.6762,lng:139.6503, image:"/images/tokyo.jpg", tagline:"Where the everyday feels extraordinary.", area:"Ueno or Asakusa", stay:"A practical base for the old town, parks and rail connections.", source:"https://www.japan.travel/en/destinations/kanto/tokyo/" },
+ Kyoto: { lat:35.0116,lng:135.7681, image:"/images/kyoto.jpg", tagline:"Slow mornings. Centuries of stories.", area:"Kyoto Station or central Kyoto", stay:"Choose a base near the transport links for your planned neighbourhoods.", source:"https://www.japan.travel/en/destinations/kansai/kyoto/" },
+ Osaka: { lat:34.6937,lng:135.5023, image:"/images/osaka.jpg", tagline:"Come curious. Leave very well fed.", area:"Namba or Umeda", stay:"Stay near a station, with plenty of places to eat after a day out.", source:"https://www.japan.travel/en/destinations/kansai/osaka/" }
+} satisfies Record<City, {lat:number;lng:number;image:string;tagline:string;area:string;stay:string;source:string}>;
+type Row = [string,string,Interest,string,number,number,number,number,string];
+const rows: Record<City,Row[]> = {
+Tokyo: [
+["imperial","Imperial Palace East Gardens","Nature","Marunouchi",1.5,0,35.6852,139.757,"Leave time for a central-city garden walk; check public opening days."],
+["ginza","Ginza architecture walk","City life","Ginza",1.5,0,35.6712,139.765,"Look up at the buildings and explore the department-store streets."],
+["nezu","Nezu Shrine","Culture","Bunkyo",1.5,0,35.7202,139.7608,"A quieter shrine stop that pairs well with the old neighbourhoods."],
+["kagurazaka","Kagurazaka café streets","Food","Kagurazaka",1.5,0,35.7012,139.735,"Find a café and wander the little lanes; use your meal allowance."],
+
+["sensoji","Sensō-ji & Asakusa","Culture","Asakusa",1.5,0,35.7148,139.7967,"Wander the temple approach and the small streets around the old town."],
+["ueno","A slower morning in Ueno Park","Nature","Ueno",1.5,0,35.7153,139.7741,"Make time for tree-lined paths and a break from the city streets."],
+["tokyo-museum","Tokyo National Museum","Culture","Ueno",2,10,35.7188,139.7765,"Explore Japanese art and history at your own pace. Check opening days."],
+["yanaka","Yanaka backstreets","City life","Yanaka",1.5,0,35.7278,139.7658,"A neighbourhood walk past little shops and quiet residential lanes."],
+["tsukiji","A taste of Tsukiji","Food","Tsukiji",1.5,0,35.6655,139.7707,"Browse the outer market. Food spending comes from your daily meal allowance."],
+["hama","Hamarikyu Gardens","Nature","Shiodome",1.5,3,35.6597,139.7636,"Follow garden paths beside ponds, with the modern city beyond."],
+["meiji","Meiji Jingū forest walk","Culture","Harajuku",1.5,0,35.6764,139.6993,"Take the wooded approach to the shrine; follow on-site etiquette signs."],
+["yoyogi","Yoyogi Park picnic","Nature","Harajuku",1.5,0,35.6717,139.6949,"Bring a snack and leave an open afternoon for the park."],
+["shibuya","Shibuya after dark","City life","Shibuya",1.5,0,35.6595,139.7005,"Explore the famous crossing and the neighbourhood around the station."],
+["shinjuku","Shinjuku Gyoen","Nature","Shinjuku",2,5,35.6852,139.71,"A spacious garden stop. Check opening days and seasonal booking rules."],
+["omoide","Omoide Yokocho food walk","Food","Shinjuku",1.5,0,35.6928,139.6996,"Look for a small spot for dinner; meals are covered by your food allowance."],
+["akihabara","Akihabara discoveries","City life","Akihabara",2,0,35.6984,139.7731,"Explore electronics, games and pop-culture shops. Shopping is extra."]
+],
+Kyoto: [
+["botanical","Kyoto Botanical Gardens","Nature","Northern Kyoto",2,5,35.0488,135.763,"Take a slower garden morning. Check current admission and opening hours."],
+["station","Kyoto Station architecture","City life","Kyoto Station",1,0,34.9858,135.7588,"Explore the station’s public spaces and get your bearings for the next journey."],
+
+["fushimi","The torii paths of Fushimi Inari","Culture","Fushimi",2,0,34.9671,135.7727,"Walk a section of the hillside shrine paths and take breaks along the way."],
+["kiyomizu","Kiyomizu-dera & hillside lanes","Culture","Higashiyama",2,5,34.9949,135.785,"Explore the temple and the surrounding historic streets."],
+["gion","An evening in Gion","City life","Higashiyama",1.5,0,35.003,135.778,"Enjoy the streets respectfully and follow local access and photography rules."],
+["maruyama","Maruyama Park pause","Nature","Higashiyama",1,0,35.0036,135.7809,"Build a quiet park stop into a day of exploring eastern Kyoto."],
+["nishiki","Nishiki Market flavours","Food","Central Kyoto",1.5,0,35.005,135.7649,"Sample something new. Purchases count towards your daily food allowance."],
+["nijo","Nijō Castle","Culture","Central Kyoto",2,15,35.0142,135.7482,"Discover the castle grounds; entry options and prices vary."],
+["kamo","Along the Kamo River","Nature","Central Kyoto",1.5,0,35.0115,135.7712,"Take an unhurried riverside walk with room for a café stop."],
+["pontocho","Dinner around Pontochō","Food","Central Kyoto",1.5,0,35.0065,135.7704,"Find dinner around the narrow lane; book ahead for a particular restaurant."],
+["arashiyama","Arashiyama bamboo walk","Nature","Arashiyama",2,0,35.017,135.671,"Explore the bamboo paths and surrounding neighbourhood."],
+["tenryu","Tenryū-ji gardens","Culture","Arashiyama",1.5,6,35.0158,135.6737,"Pair the temple garden with a relaxed day in western Kyoto."],
+["philosopher","The Philosopher’s Path","Nature","Northern Higashiyama",1.5,0,35.0265,135.7945,"Follow the canal-side walking route, leaving time for small detours."],
+["ginkaku","Ginkaku-ji","Culture","Northern Higashiyama",1.5,6,35.027,135.7983,"Explore the temple gardens at the northern end of the Philosopher’s Path."]
+],
+Osaka: [
+["sumiyoshi","Sumiyoshi Taisha","Culture","Sumiyoshi",1.5,0,34.6126,135.4938,"A shrine visit away from central Osaka; allow additional local travel time."],
+["nakazakicho","Nakazakichō café lanes","Food","Umeda",1.5,0,34.7068,135.505,"Look for a café in the neighbourhood’s small streets. Meals use your daily allowance."],
+
+["dotonbori","Dōtonbori lights","City life","Namba",1.5,0,34.6687,135.5013,"Take a canal-side walk through one of Osaka’s liveliest areas."],
+["kuromon","Kuromon Market bites","Food","Namba",1.5,0,34.6654,135.5063,"Pick a few things to try within your daily food allowance."],
+["hozenji","Hōzenji & the little lanes","Culture","Namba",1,0,34.6677,135.5022,"Step away from the main streets for a small temple and stone-paved lanes."],
+["shinsaibashi","Shinsaibashi wandering","City life","Namba",1.5,0,34.673,135.5005,"Browse the shopping streets. Leave souvenir spending outside this estimate."],
+["osaka-castle","Osaka Castle museum","Culture","Castle area",2,12,34.6873,135.5262,"Visit the castle museum; check current entry details before travelling."],
+["castle-park","Osaka Castle Park","Nature","Castle area",1.5,0,34.685,135.526,"Stretch your legs around the park and its broad paths."],
+["nakanoshima","Nakanoshima riverside","Nature","Nakanoshima",1.5,0,34.6924,135.5069,"Follow the river through a calmer pocket of central Osaka."],
+["umeda","Umeda Sky Building","City life","Umeda",1.5,15,34.7055,135.49,"Plan a city-view stop. Admission and booking details can change."],
+["tenjin","Tenjinbashisuji food stroll","Food","Tenma",2,0,34.7048,135.511,"Explore the shopping arcade and find somewhere local for lunch."],
+["shinsekai","Shinsekai neighbourhood walk","Food","Shinsekai",1.5,0,34.6525,135.5063,"Explore the neighbourhood and try a meal from your daily allowance."],
+["shitennoji","Shitennō-ji","Culture","Tennoji",1.5,4,34.6545,135.5165,"Make time for a temple visit; some areas have separate admission."],
+["tennoji","Tennoji Park & gardens","Nature","Tennoji",1.5,3,34.6507,135.509,"A green pause between neighbourhood walks; garden admission may apply."]
+]};
+export const PLACES: Place[] = CITIES.flatMap(city => rows[city].map(([id,name,category,area,hours,cost,lat,lng,description])=>({id,city,name,category,area,hours,cost,lat,lng,description})));
+export const placeById = (id:string) => PLACES.find(p=>p.id===id);
