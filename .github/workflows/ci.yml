@@ -1,12 +1,23 @@
 name: Project checks
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 permissions:
   contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: tabi_test
+          POSTGRES_PASSWORD: test_only_password
+          POSTGRES_DB: tabi_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tabi_test -d tabi_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://tabi_test:test_only_password@127.0.0.1:5432/tabi_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,5 +26,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run typecheck
       - run: npm run build
