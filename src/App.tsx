@@ -22,7 +22,7 @@ import {
   STAY_LEVELS,
 } from "../shared/destinations";
 import { DEFAULT_QUIZ, type Quiz, type Recommendation } from "../shared/recommendations";
-import { calculateBudget, euro, type Trip } from "../shared/planner";
+import { calculateBudget, allocation, euro, type Trip } from "../shared/planner";
 import * as api from "./api";
 import TripQuiz from "./components/TripQuiz";
 import TripDetail from "./components/TripDetail";
@@ -32,6 +32,7 @@ export default function App() {
   const [quiz, setQuiz] = useState<Quiz>(DEFAULT_QUIZ),
     [options, setOptions] = useState<Recommendation[]>([]),
     [trip, setTrip] = useState<Trip | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [savedOpen, setSavedOpen] = useState(false),
@@ -50,6 +51,7 @@ export default function App() {
     setError("");
     try {
       setOptions(await api.recommendations(quiz));
+      setSelectedOption(null);
       navigate("results");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not generate options.");
@@ -234,17 +236,17 @@ export default function App() {
                       }}
                     >
                       <div className="destination-art">
-                        {id === "japan" ? (
-                          <img src="/images/kyoto.jpg" alt="Shrine gates in Kyoto" />
-                        ) : (
-                          <div className={"city-illustration " + id} aria-hidden="true">
-                            <span />
-                            <span />
-                            <span />
-                            <span />
-                            <i />
-                          </div>
-                        )}
+                        <img
+                          src={"/images/" + (id === "japan" ? "kyoto" : id) + ".jpg"}
+                          alt={
+                            id === "japan"
+                              ? "Shrine gates in Kyoto"
+                              : id === "italy"
+                                ? "A street in Rome"
+                                : "Lisbon cityscape"
+                          }
+                          loading="lazy"
+                        />
                         <span className="country-label">
                           0{i + 1} / {d.symbol}
                         </span>
@@ -322,10 +324,22 @@ export default function App() {
                 const b = calculateBudget(o.trip),
                   fits = b.total <= totalBudget;
                 return (
-                  <article className={"option-card " + (i === 1 ? "featured" : "")} key={o.id}>
+                  <article
+                    className={"option-card " + (selectedOption === o.id ? "featured" : "")}
+                    key={o.id}
+                  >
                     <div className="option-top">
                       <span className="eyebrow">OPTION 0{i + 1}</span>
-                      {i === 1 && <span className="pill">Interest-led</span>}
+                      <label className="option-select">
+                        <input
+                          type="radio"
+                          name="trip-option"
+                          checked={selectedOption === o.id}
+                          onChange={() => setSelectedOption(o.id)}
+                          aria-label={"Select " + o.title}
+                        />
+                        {selectedOption === o.id ? "Selected" : "Select"}
+                      </label>
                     </div>
                     <h2>{o.title}</h2>
                     <p>{o.description}</p>
@@ -344,7 +358,11 @@ export default function App() {
                         : euro(b.total - totalBudget) + " above your budget"}
                     </p>
                     <div className="option-route">
-                      {destinationFor(o.trip.preferences.destination).cities.join(" → ")}
+                      {destinationFor(o.trip.preferences.destination)
+                        .cities.map(
+                          (city) => `${city} · ${allocation(o.trip.preferences)[city]} days`,
+                        )
+                        .join(" → ")}
                     </div>
                     <ul className="option-facts">
                       <li>
@@ -352,9 +370,9 @@ export default function App() {
                         <span>{STAY_LEVELS[o.trip.preferences.stayLevel ?? 0]}</span>
                       </li>
                       <li>
-                        <b>Rooms</b>
+                        <b>Room / night</b>
                         <span>
-                          {b.rooms} × {b.nights} nights
+                          {euro(o.trip.preferences.nightly)} · {b.rooms} room(s) × {b.nights} nights
                         </span>
                       </li>
                       <li>
@@ -362,8 +380,11 @@ export default function App() {
                         <span>{euro(o.trip.preferences.food)} / person / day</span>
                       </li>
                       <li>
-                        <b>Highlights</b>
-                        <span>{o.trip.days.flatMap((d) => d.places).length} planned stops</span>
+                        <b>Visits</b>
+                        <span>
+                          {o.trip.days.flatMap((d) => d.places).length} stops · {euro(b.activities)}{" "}
+                          for group
+                        </span>
                       </li>
                     </ul>
                     {!fits && (
@@ -373,8 +394,9 @@ export default function App() {
                       </p>
                     )}
                     <button
-                      className={i === 1 ? "primary wide" : "secondary wide"}
+                      className={selectedOption === o.id ? "primary wide" : "secondary wide"}
                       onClick={() => {
+                        setSelectedOption(o.id);
                         setTrip(o.trip);
                         navigate("trip");
                       }}

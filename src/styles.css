@@ -501,98 +501,7 @@ main {
   margin-top: 15px;
   color: #879184;
 }
-.city-illustration {
-  height: 100%;
-  position: relative;
-  background: #b6b89a;
-  overflow: hidden;
-}
-.city-illustration:before {
-  content: "";
-  position: absolute;
-  width: 75px;
-  height: 75px;
-  background: #f0d8ad;
-  border-radius: 50%;
-  right: 35px;
-  top: 21px;
-}
-.city-illustration:after {
-  content: "";
-  position: absolute;
-  background: #8b997f;
-  width: 400px;
-  height: 110px;
-  transform: rotate(-10deg);
-  bottom: -60px;
-  left: -20px;
-}
-.city-illustration span {
-  position: absolute;
-  bottom: 0;
-  width: 76px;
-  height: 110px;
-  background: #d2b593;
-  border-radius: 40px 40px 0 0;
-  left: 25px;
-  box-shadow: inset -10px 0 #bc9c7f;
-}
-.city-illustration span:nth-child(2) {
-  left: 94px;
-  height: 145px;
-  width: 60px;
-  background: #c7a27e;
-  border-radius: 32px 32px 0 0;
-}
-.city-illustration span:nth-child(3) {
-  left: 152px;
-  height: 80px;
-  background: #e0c2a0;
-}
-.city-illustration span:nth-child(4) {
-  left: 235px;
-  height: 120px;
-  width: 50px;
-  background: #b79779;
-  border-radius: 0;
-}
-.city-illustration i {
-  position: absolute;
-  bottom: 0;
-  left: 110px;
-  background: #837d65;
-  width: 24px;
-  height: 78px;
-  border-radius: 20px 20px 0 0;
-}
-.city-illustration.portugal {
-  background: #9cbcb7;
-}
-.city-illustration.portugal:after {
-  background: #698f8b;
-}
-.city-illustration.portugal span {
-  background: #d6ab87;
-  box-shadow: inset -10px 0 #bb896b;
-  border-radius: 0;
-  height: 105px;
-  transform: skewY(-9deg);
-}
-.city-illustration.portugal span:nth-child(2) {
-  background: #e8cf9e;
-  height: 141px;
-}
-.city-illustration.portugal span:nth-child(3) {
-  background: #d3916f;
-  height: 90px;
-}
-.city-illustration.portugal span:nth-child(4) {
-  background: #e2c6a2;
-  height: 155px;
-}
-.city-illustration.portugal i {
-  background: #617f7b;
-}
+
 .how-it-works {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1210,8 +1119,9 @@ legend {
   border: none;
 }
 .tabi-marker > span {
-  width: 29px;
-  height: 29px;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
   border-radius: 50%;
   background: #315b42;
   color: #fff;
@@ -1715,10 +1625,6 @@ legend {
     top: 14px;
     left: 14px;
   }
-  .city-illustration span:nth-child(3),
-  .city-illustration span:nth-child(4) {
-    display: none;
-  }
   .how-it-works {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -1939,4 +1845,21 @@ legend {
   background: #fffefa;
   color: #375532;
   box-shadow: 0 2px 5px #2641220b;
+}
+
+.option-select {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.option-select input {
+  accent-color: #315b42;
+  width: 17px;
+  height: 17px;
+}
+.option-card:focus-within {
+  outline: 2px solid #688465;
+  outline-offset: 3px;
 }

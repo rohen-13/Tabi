@@ -10,7 +10,7 @@ Country context and official travel information:
 - Italy: https://www.italia.it/en/italy
 - Portugal: https://www.visitportugal.com/en/destinos
 
-These references provide destination context, **not the prices used by the model**. Check current venue access, ticket prices and closures before travel. Image attribution is in `public/images/ATTRIBUTION.md`; the Italy and Portugal card illustrations are CSS artwork.
+These references provide destination context, **not the prices used by the model**. Check current venue access, ticket prices and closures before travel. Image attribution is in `public/images/ATTRIBUTION.md`.
 
 ## Price assumptions
 
@@ -20,6 +20,6 @@ The `editorial-v1` identifier records the estimate model in newly saved trip pre
 
 ## Recommendation method
 
-Value keeps a simple room category. Discovery can upgrade when the candidate total fits within 90% of the group budget. Comfort can upgrade when it fits the full budget. All totals already include a 10% contingency. Unused budget remains unused; an unaffordable basic trip is reported as over budget.
+Classic keeps a simple room category; it does not guarantee the cheapest total because visits differ between routes. Discovery can upgrade when the candidate total fits within 90% of the group budget. Comfort can upgrade when it fits the full budget. All totals already include a 10% contingency. Unused budget remains unused; an unaffordable basic trip is reported as over budget.
 
 A greedy itinerary heuristic prefers interests, matching route style, affordable activities and nearby stops. It is deterministic and tested; it does not guarantee a globally optimal route.

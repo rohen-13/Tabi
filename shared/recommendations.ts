@@ -68,14 +68,14 @@ export function recommendTrips(input: Quiz): Recommendation[] {
     "classic",
   ];
   const titles = [
-    "Keep it simple",
+    "Classic route",
     q.interests.includes("Nature") ? "Take the scenic route" : "Follow your curiosity",
-    "Stay a little nicer",
+    "Comfort priority",
   ];
   const descriptions = [
-    "Lower-cost stays and more room in your budget.",
-    "More time for your interests, with balanced comfort.",
-    "More of the available budget goes towards accommodation.",
+    "Classic city split with basic rooms. Total cost also depends on the visits included.",
+    "A different city split and visits focused on culture or nature. Rooms upgrade only within 90% of your budget.",
+    "The classic route, with room and meal upgrades when your budget allows.",
   ];
   return styles.map((style, i) => {
     const build = (level: 0 | 1 | 2) =>
@@ -107,7 +107,10 @@ export function recommendTrips(input: Quiz): Recommendation[] {
     return {
       id: ["value", "discovery", "comfort"][i],
       title: titles[i],
-      description: descriptions[i],
+      description:
+        i === 2 && trip.preferences.stayLevel === 0
+          ? "Your budget does not cover a room upgrade, so this currently matches the classic option."
+          : descriptions[i],
       trip,
     };
   });
