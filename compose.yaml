@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: tabi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env and choose a local password}
+      POSTGRES_DB: tabi
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - tabi-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tabi -d tabi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://tabi:${POSTGRES_PASSWORD}@db:5432/tabi
+      HOST: 0.0.0.0
+      PORT: 5173
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  tabi-postgres:
