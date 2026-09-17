@@ -1,120 +1,121 @@
-# Tabi — Japan, your way
+# Tabi — Find your kind of trip
 
-A full-stack Japan trip planner built for a software engineering portfolio. Turn a budget and a few interests into an editable itinerary across Tokyo, Kyoto and Osaka.
+A full-stack travel planner that turns a short quiz into three trip options, with automatic cost estimates, editable itineraries and a persistent trip library. Built with React, TypeScript, Express, PostgreSQL, Docker Compose and Leaflet. SQLite is available for a lightweight local run.
 
-## What works
+## What the application does
 
-- Instant demo without application sign-in.
-- 7–14 days in Japan, 1–6 travellers, three trip styles and three activity paces.
-- 44 curated places with coordinates, categories, time estimates and illustrative entry allowances.
-- Deterministic itinerary selection based on interests, budget pressure and geographic proximity.
-- Whole-trip and per-day interactive Leaflet maps.
-- Replace, add or remove stops without duplicating places or exceeding daily time limits.
-- Transparent group budgets including room sharing, flights, food, transport, activities and a 10% contingency.
-- Authenticated cloud saving, listing and deletion of itinerary snapshots.
-- Plain-text export without signing in.
-- Responsive layouts, keyboard-accessible dialogs, recoverable error states and optional WebMCP tools.
+1. Choose a departure city and a destination: Japan, Italy or Portugal.
+2. Answer a three-step quiz about dates, duration, travellers, budget, interests and pace.
+3. Compare three options with group and per-person costs and a clear budget surplus or shortfall.
+4. Explore the daily route, change stops, inspect airport and accommodation plans, save and export.
 
-## Stack
+Departure city affects the flight allowance. Travel month affects the seasonal allowance. Available budget determines which accommodation category fits. Group sizes affect flights, meals, tickets and the number of shared private rooms. You no longer enter flight, hotel or meal prices yourself.
 
-| Layer | Technology |
-|---|---|
-| Interface | React 19, TypeScript, Tailwind CSS, shadcn/Radix primitives |
-| Application framework | Next.js App Router conventions running through Cloudflare Vinext + Vite |
-| Runtime | Cloudflare Workers, deployed through Sites |
-| Storage | Cloudflare D1 (SQLite), prepared statements, Drizzle schema migrations |
-| Identity | Platform-managed Sign in with ChatGPT |
-| Maps | Leaflet and OpenStreetMap tiles |
-| Validation | Zod shared between browser and API |
-| Tests | Node.js built-in test runner |
+**Estimates are illustrative model outputs, not live flight fares or hotel offers.** No booking API, account or paid API key is required.
 
-This build uses **D1 rather than Supabase** and **Sites rather than Vercel** so cloud storage and deployment work in the available environment. It is not a conventional Vercel-hosted Next.js build. Vinext is a beta compatibility runtime; migration to native Next.js would require replacing Worker/D1 integration and authentication.
+## Start with Docker and PostgreSQL
 
-## Run locally
+Install and start Docker Desktop. On first setup only:
 
-Prerequisites: Node.js 24 and npm.
+```sh
+cp .env.example .env
+```
+
+Choose a local URL-safe password in `.env` (letters and digits). Keep this file out of Git. If `.env` already exists, preserve it: it may contain the password for your existing database volume.
+
+```sh
+docker compose up -d --build --wait
+```
+
+Open http://127.0.0.1:5173. Docker builds the frontend and runs two services: `app` and `db`. PostgreSQL uses a named persistent volume. Both published ports bind only to this computer.
+
+```sh
+docker compose ps                         # container status
+docker compose logs --tail=50 app         # app logs
+docker compose exec db psql -U tabi -d tabi # SQL console
+docker compose stop                      # stop without deleting data
+docker compose start                     # start existing containers again
+```
+
+Do not run `docker compose down -v` unless you intend to delete the database volume. Changing the password in `.env` does not change the password inside an already initialized PostgreSQL volume.
+
+The macOS `Start Tabi.command` launcher also supports this workflow. For Docker details, read [DOCKER_RU.md](DOCKER_RU.md).
+
+## Develop without Docker
+
+Install Node.js 24 or newer, then:
 
 ```sh
 npm ci
-npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_abnormal_pestilence.sql
-npm run dev -- --hostname 127.0.0.1
+npm run dev
 ```
 
-Open the local URL printed by the server, normally http://127.0.0.1:5173.
+This runs the app at the same address, using `data/tabi.sqlite`. Stop the Docker `app` service first if it already occupies port 5173. SQLite and PostgreSQL are separate libraries; switching between them does not migrate saved trips.
 
-Apply the initial migration **once per fresh local database**. Development and the built Worker share `.wrangler/state`. Do not replay an already-applied migration.
+For the built frontend: `npm run build`, then `npm start`. The TypeScript server uses `tsx`, so keep development dependencies installed for this workflow.
 
-The local “Sign in with ChatGPT” route uses the starter’s development identity. It is a mock for local testing, not real OAuth. Hosted identity is supplied by the Sites platform. The demo planner itself does not need an account, but this deployment currently has **owner-only site access** at the user’s request.
+Optional environment variables:
 
-No flight API, map API key or AI API key is required. Maps need internet access; an unavailable tile provider does not prevent editing or exporting a trip.
-
-## Verification
-
-```sh
-npm test
-npm run typecheck
-npm run build
-# With the development server running and local migration applied:
-npm run test:api
-```
-
-The algorithm suite tests 72 combinations of duration, style and pace, unique places, city ordering, time limits, group/room arithmetic, replacement validity, invalid inputs and budget pressure.
-
-The API smoke test is restricted to localhost. It creates a disposable trip under the local mock identity, verifies save/read and authentication/input/origin checks, then deletes that test trip.
-
-Browser checks cover preference changes, over-budget feedback, place replacement, map modes, the sign-in draft handoff, saved-trip listing and mobile layout. WebMCP valid/invalid inputs were tested with state read-back.
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string; if absent, SQLite is used |
+| `TABI_DB_PATH` | Alternative SQLite file path |
+| `PORT` | HTTP port, default 5173 |
+| `HOST` | Default 127.0.0.1; Compose sets 0.0.0.0 inside the container |
+| `TEST_DATABASE_URL` | Dedicated PostgreSQL database for integration tests |
 
 ## Architecture
 
 ```text
-app/page.tsx                   Server entry and optional identity
-components/planner.tsx         Planner UI and shared actions
-components/trip-map.tsx        Client-only Leaflet map lifecycle
-lib/places.ts                  Curated destination catalogue
-lib/planner.ts                 Pure itinerary and budget functions
-lib/validation.ts              Shared validation and invariants
-app/api/trips/route.ts         Authenticated REST endpoints
-db/trips.ts                    Owner-scoped prepared statements
-db/schema.ts / drizzle/        Relational schema and migration
-tests/                        Algorithm and local API checks
+React quiz → POST /api/recommendations → validated recommendation engine
+React plan → GET/POST/DELETE /api/trips → storage interface → PostgreSQL or SQLite
+Leaflet map → OpenStreetMap tiles (internet needed)
 ```
 
-The route splits days across the three cities, scores unused candidates against interests/style and budget pressure, and penalises distance from the previous stop. It then fills each day up to an activity count and time capacity, including 30-minute local buffers. Intercity days reserve an additional three hours. This is a greedy heuristic, not an optimal route solver or live transport router.
+- `src/App.tsx`: home, results, navigation and trip library.
+- `src/components/TripQuiz.tsx`: the three quiz steps.
+- `src/components/TripDetail.tsx`: route editor, flights, stays and budget.
+- `shared/recommendations.ts`: quiz schema, cost category selection and travel-search links.
+- `shared/destinations.ts`: supported origins, country routes and versioned editorial price assumptions.
+- `shared/planner.ts`: greedy place selection, time limits and budget arithmetic.
+- `shared/places.ts`, `shared/data/europe.ts`: 104 curated places across nine cities.
+- `shared/validation.ts`: validation of saved itinerary snapshots, including uniqueness and daily capacity.
+- `server/app.ts`: HTTP API, input validation and local-origin checks.
+- `server/database.ts`, `server/postgres.ts`: prepared SQLite / parameterized PostgreSQL queries.
+- `Dockerfile`, `compose.yaml`: reproducible local app and database environment.
 
-Every saved trip is validated on the server. The owner is derived from trusted platform identity, never from submitted JSON. Reads and deletions include the owner in the SQL predicate. SQL values are bound parameters. API responses are not cached. Session storage is used only for a temporary draft during sign-in; saved records live in D1.
+The model is deterministic and explainable, not AI. First it sets a route/season flight allowance, then selects affordable room categories for each option. It generates city days and greedily chooses unused places using interest, cost pressure, proximity and time limits. A 10% buffer is added to the total. If even basic costs exceed the budget, the result stays over budget instead of promising fictional availability.
 
 ## API
 
-| Method | Endpoint | Behaviour |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | /api/trips | Current user’s latest 50 snapshots; anonymous visitors receive an empty list |
-| POST | /api/trips | Validate and save a new snapshot; requires identity |
-| DELETE | /api/trips?id=... | Delete a snapshot belonging to the current user |
+| POST | `/api/recommendations` | Validate quiz answers and calculate three options |
+| GET | `/api/trips` | List saved snapshots |
+| POST | `/api/trips` | Validate and save a snapshot |
+| DELETE | `/api/trips/:id` | Delete a snapshot |
+| GET | `/api/health` | Check app status and storage mode |
 
-The 50-trip guard is an MVP limit, not a transactional rate limiter. A public, high-traffic release should add rate limiting and stronger concurrency controls.
+Trips are stored as JSON/JSONB snapshots with a UUID and creation timestamp. A relational model and migrations would be the next step for shared place catalogues, collaboration or analytics.
 
-## Deliberate limits
+## Tests
 
-- Japan only; Tokyo, Kyoto and Osaka only.
-- All prices are illustrative EUR allowances. There are no live flights, hotel availability checks or bookings.
-- Flight and hotel costs are editable inputs. Stay links lead to an external city search.
-- No date-specific opening hours, timetable checks, currency conversions or travel-time matrix.
-- Dotted map lines indicate stop order, not a walking/driving route.
-- Time budgets use approximate visit durations and fixed transfer buffers.
-- The finite place catalogue may leave days open on long or busy itineraries.
-- Saved trips are snapshots, not collaborative documents.
-- Text export is supported; PDF and calendar export are future extensions.
-- Keep the demo private until you choose to change the site’s access policy.
+```sh
+npm test
+npm run build
+```
 
-## Image credits
+Without `TEST_DATABASE_URL`, the PostgreSQL integration test is skipped. GitHub Actions supplies a PostgreSQL 17 service and runs the full suite. The tests cover all supported country/duration/pace combinations, costs, hotel-night consistency, origin/season effects, budget upgrades, invalid inputs, API operations, persistence and local-origin rejection. UI verification is manual.
 
-All bundled photographs are CC0, with optional attribution retained:
+## Deliberate scope
 
-- [Tokyo — Joe Lewandowski](https://commons.wikimedia.org/wiki/File:Urban_Tokyo_panorama_(Unsplash).jpg)
-- [Kyoto — M338](https://commons.wikimedia.org/wiki/File:Fushimi_Inari-taisha_sembon-torii.jpg)
-- [Osaka — Sakai Yayoi](https://commons.wikimedia.org/wiki/File:Osaka_Dotonbori_yoru_00.jpg)
+- Three countries, predefined three-city routes, 7–14 destination days, 1–6 adults, four departure airports.
+- Editorial allowances, not scraped, measured or live market prices. See [DATA_SOURCES.md](DATA_SOURCES.md).
+- Suggested accommodation areas and categories, not named hotels with confirmed availability.
+- Flight links are multi-city search prompts, not verified airline services.
+- No date-specific opening checks, walking routes, timetable API, visa advice, live currency or booking engine.
+- Finite place lists may leave free time on long itineraries; the app does not repeat places to fill space.
+- Saving creates a snapshot; unsaved edits reset on refresh.
+- Local single-user application, with no login. Public deployment needs explicit access/authentication design and a hosting decision. Nothing here deploys to the internet.
 
-Destination reference links are included in the app’s “Good to know” tab.
-
-See [PORTFOLIO.md](./PORTFOLIO.md) for a project summary and an interview demonstration script.
+[Russian walkthrough](GUIDE_RU.md) · [Interview guide](PORTFOLIO.md) · [Docker explained](DOCKER_RU.md) · [Image credits](public/images/ATTRIBUTION.md)

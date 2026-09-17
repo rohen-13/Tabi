@@ -1,49 +1,40 @@
-# Portfolio presentation
+# Tabi: interview walkthrough
 
-## Project summary
+## Introduction
 
-**Tabi — personalised Japan itinerary planner**
+“Tabi turns a short travel quiz into three itinerary options for Japan, Italy or Portugal. It calculates an illustrative budget from the departure city, season, group size and accommodation category, then lets users adjust and save a route. I used React and TypeScript, an Express API, PostgreSQL and Docker Compose.”
 
-A responsive full-stack application that turns travel preferences and a group budget into an editable multi-city itinerary. It combines an interactive map, explainable budget calculations and authenticated cloud persistence.
+## Demonstrate in three minutes
 
-**Technologies:** React, TypeScript, Next.js App Router conventions / Vinext, Tailwind CSS, Cloudflare Workers, SQLite/D1, Drizzle, Leaflet, Zod.
+1. Choose Cork to Portugal, seven days, two adults and a €3000 group budget.
+2. Pick interests and compare the three results.
+3. Explain how a larger budget can improve accommodation without artificially inflating flight costs.
+4. Open Flights & stays: airport plan, neighbourhood suggestions, nights and room count.
+5. Swap a stop, show the updated map and budget, save the trip and reopen it.
+6. Show `docker compose ps`, then the `trips` table in PostgreSQL.
 
-## Suggested CV entry
+## Explain these decisions
 
-Use wording you can personally explain and substantiate:
+**Client/server boundary.** The browser sends quiz answers to POST `/api/recommendations`. The server validates them and returns computed options. Saved trips go through a separate CRUD API. Zod validates runtime input; TypeScript checks code at development time.
 
-- Developed a full-stack Japan travel planner with React and TypeScript, interactive maps and authenticated itinerary persistence.
-- Implemented a deterministic recommendation heuristic across 44 places, enforcing unique stops and daily time constraints.
-- Built owner-scoped REST endpoints with server-side validation and prepared SQL statements; tested itinerary invariants and persistence flows.
+**Budget as a constraint.** Rates come from an explicit editorial dataset. The algorithm chooses a room category whose full cost fits, including food, transport, activities and contingency. It reports shortfalls rather than fabricating cheaper fares.
 
-Do not claim commercial users, revenue, production traffic or performance improvements that have not been measured. Be ready to explain how development tools and AI assistance were used.
+**Route generation.** Days are allocated across cities. Places are scored by interests, style, budget pressure and distance from the last stop. Daily capacities and transfer allowances constrain selection. The algorithm is greedy, explainable and deterministic.
 
-## Two-minute demo
+**Persistence.** PostgreSQL stores snapshots as JSONB with UUIDs and timestamps. Queries are parameterized. SQLite implements the same storage interface for a lightweight local setup. The two databases do not automatically synchronize.
 
-1. Open the planner. Explain the user problem: connecting destinations, time and budget.
-2. Set seven days, two travellers, nature interests and a relaxed pace.
-3. Compare the group estimate with the budget. Explain one room for two travellers.
-4. Switch cities and days, then show the per-day map.
-5. Replace a paid stop with a free-entry option and show the recalculated budget.
-6. Save a named trip, open My trips, and reopen the snapshot.
-7. Export the itinerary.
-8. Show the tests and describe one limitation you would address next.
+**Docker.** A Dockerfile builds the app image; Compose runs the app and PostgreSQL. Health checks control readiness. A named volume keeps trips across container restarts. Secrets are excluded from Git and image build context. Docker is an execution environment, not a database or hosting provider.
 
-## Technical discussion points
+**Testing.** Tests check route invariants across countries, durations and paces; origin/season effects; budget upgrades; hotel totals; input validation; CRUD and persistence with SQLite and real PostgreSQL. UI checks are manual.
 
-- Why a deterministic greedy heuristic is a good first version: reproducible, explainable and testable.
-- Why geographical proximity is not the same as real travel time.
-- Why server-side ownership checks are necessary even when the UI hides actions.
-- Why a shared Zod schema is useful, and why it does not replace authorisation.
-- Why flight costs scale per person but room costs scale per room.
-- Why SQL snapshots were chosen for the MVP, and when to normalise itinerary days and stops.
-- Trade-offs of the beta Vinext runtime versus native Next.js.
-- How to migrate storage/authentication if targeting a different hosting provider.
+## CV bullet
 
-## Before sending applications
+Built a full-stack travel planner using React, TypeScript, Express, PostgreSQL and Docker Compose, with a multi-step quiz, budget-constrained recommendations, interactive maps and tested itinerary persistence.
 
-The hosted site is currently private by request. Recruiters cannot open it until you intentionally change access.
+Only claim what you can explain. AI assisted development: review the code and make your own change before presenting it as your work.
 
-The project source is available locally and in the Sites source repository. A GitHub repository has not been created on your behalf. When ready, publish the source to your own GitHub, add the demo link, and replace any project ownership details as appropriate.
+## Deliberate limitations and next steps
 
-Practise explaining the core functions in `lib/planner.ts` and the ownership predicates in `db/trips.ts` before including the project in your CV.
+Prices are demo estimates, not live offers; hotels are suggested areas/categories. There are three curated country routes, no user authentication and no public deployment. Next steps: a real provider API with typed adapters and caching, date-aware venue data, authentication, migrations and hosted backups.
+
+A good first independent change: add a “free activities first” preference with a test, then connect it through the quiz, request schema and recommendation engine.
