@@ -39,7 +39,7 @@ docker compose start                     # start existing containers again
 
 Do not run `docker compose down -v` unless you intend to delete the database volume. Changing the password in `.env` does not change the password inside an already initialized PostgreSQL volume.
 
-The macOS `Start Tabi.command` launcher also supports this workflow. For Docker details, read [DOCKER_RU.md](DOCKER_RU.md).
+The macOS `Start Tabi.command` launcher also supports this workflow.
 
 ## Develop without Docker
 
@@ -118,4 +118,4 @@ Without `TEST_DATABASE_URL`, the PostgreSQL integration test is skipped. GitHub 
 - Saving creates a snapshot; unsaved edits reset on refresh.
 - Local single-user application, with no login. Public deployment needs explicit access/authentication design and a hosting decision. Nothing here deploys to the internet.
 
-[Russian walkthrough](GUIDE_RU.md) · [Interview guide](PORTFOLIO.md) · [Docker explained](DOCKER_RU.md) · [Image credits](public/images/ATTRIBUTION.md)
+[Interview guide](PORTFOLIO.md) · [Image credits](public/images/ATTRIBUTION.md)
